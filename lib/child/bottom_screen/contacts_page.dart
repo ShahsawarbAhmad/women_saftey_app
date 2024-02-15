@@ -16,7 +16,8 @@ class ContactsPage extends StatefulWidget {
 class _ContactsPageState extends State<ContactsPage> {
   List<Contact> contacts = [];
   List<Contact> contactsFiltered = [];
-  final DatabaseHelper _databaseHelper = DatabaseHelper();
+
+  DatabaseHelper _databaseHelper = DatabaseHelper();
 
   TextEditingController searchController = TextEditingController();
   @override
@@ -32,10 +33,10 @@ class _ContactsPageState extends State<ContactsPage> {
   }
 
   filterContact() {
-    List<Contact> contacts = [];
-    contacts.addAll(contacts);
+    List<Contact> _contacts = [];
+    _contacts.addAll(contacts);
     if (searchController.text.isNotEmpty) {
-      contacts.retainWhere((element) {
+      _contacts.retainWhere((element) {
         String searchTerm = searchController.text.toLowerCase();
         String searchTermFlattren = flattenPhoneNumber(searchTerm);
         String contactName = element.displayName!.toLowerCase();
@@ -54,7 +55,7 @@ class _ContactsPageState extends State<ContactsPage> {
       });
     }
     setState(() {
-      contactsFiltered = contacts;
+      contactsFiltered = _contacts;
     });
   }
 
@@ -90,7 +91,6 @@ class _ContactsPageState extends State<ContactsPage> {
   }
 
   getAllContacts() async {
-    // ignore: no_leading_underscores_for_local_identifiers
     List<Contact> _contacts =
         await ContactsService.getContacts(withThumbnails: false);
     setState(() {
@@ -101,10 +101,8 @@ class _ContactsPageState extends State<ContactsPage> {
   @override
   Widget build(BuildContext context) {
     bool isSearchIng = searchController.text.isNotEmpty;
-    // ignore: prefer_is_empty
     bool listItemExit = (contactsFiltered.length > 0 || contacts.length > 0);
     return Scaffold(
-      // ignore: prefer_is_empty
       body: contacts.length == 0
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
@@ -135,7 +133,6 @@ class _ContactsPageState extends State<ContactsPage> {
                                 // subtitle:Text(contact.phones!.elementAt(0)
                                 // .value!) ,
                                 leading: contact.avatar != null &&
-                                        // ignore: prefer_is_empty
                                         contact.avatar!.length > 0
                                     ? CircleAvatar(
                                         backgroundColor: primaryColor,
@@ -147,7 +144,6 @@ class _ContactsPageState extends State<ContactsPage> {
                                         child: Text(contact.initials()),
                                       ),
                                 onTap: () {
-                                  // ignore: prefer_is_empty
                                   if (contact.phones!.length > 0) {
                                     final String phoneNum =
                                         contact.phones!.elementAt(0).value!;
@@ -163,7 +159,6 @@ class _ContactsPageState extends State<ContactsPage> {
                             },
                           ),
                         )
-                      // ignore: avoid_unnecessary_containers
                       : Container(
                           child: const Text("searching"),
                         ),
@@ -180,7 +175,6 @@ class _ContactsPageState extends State<ContactsPage> {
     } else {
       Fluttertoast.showToast(msg: "Failed to add contacts");
     }
-    // ignore: use_build_context_synchronously
     Navigator.of(context).pop(true);
   }
 }

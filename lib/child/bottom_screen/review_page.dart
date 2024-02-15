@@ -21,8 +21,7 @@ class _ReviewPageState extends State<ReviewPage> {
         context: context,
         builder: (_) {
           return AlertDialog(
-            // scrollable: true,
-            title: const Text("Review your place"),
+            title: Text("Review your place"),
             content: Form(
                 child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -36,12 +35,10 @@ class _ReviewPageState extends State<ReviewPage> {
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Expanded(
-                    child: CustomTextField(
-                      controller: viewsC,
-                      hintText: 'enter location',
-                      maxLines: 2,
-                    ),
+                  child: CustomTextField(
+                    controller: viewsC,
+                    hintText: 'enter reviews detail',
+                    maxLines: 2,
                   ),
                 ),
               ],
@@ -77,42 +74,56 @@ class _ReviewPageState extends State<ReviewPage> {
     });
   }
 
+  void deleteDocument(String documentId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('reviews')
+          .doc(documentId)
+          .delete()
+          .then((value) {
+        Fluttertoast.showToast(msg: "deleted successfully");
+      }).catchError((error) {
+        Fluttertoast.showToast(msg: error.toString());
+      });
+
+      print('Document $documentId deleted successfully.');
+    } catch (e) {
+      print('Error deleting document: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: isSaving == true
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Center(
-                    child: Text(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    const Text(
                       "Recent Review by other",
                       style: TextStyle(fontSize: 30, color: Colors.black),
                     ),
-                  ),
-                  Expanded(
-                    child: StreamBuilder(
-                      stream: FirebaseFirestore.instance
-                          .collection('reviews')
-                          .snapshots(),
-                      builder: (BuildContext context,
-                          AsyncSnapshot<QuerySnapshot> snapshot) {
-                        if (!snapshot.hasData) {
-                          return const Center(
-                              child: CircularProgressIndicator());
-                        }
+                    Expanded(
+                      child: StreamBuilder(
+                        stream: FirebaseFirestore.instance
+                            .collection('reviews')
+                            .snapshots(),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<QuerySnapshot> snapshot) {
+                          if (!snapshot.hasData) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          }
 
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: ListView.builder(
+                          return ListView.builder(
                             itemCount: snapshot.data!.docs.length,
                             itemBuilder: (BuildContext context, int index) {
                               final data = snapshot.data!.docs[index];
                               return Padding(
-                                padding: const EdgeInsets.all(5.0),
+                                padding: const EdgeInsets.all(3.0),
                                 child: Card(
                                   elevation: 10,
                                   // color: Colors.primaries[Random().nextInt(17)],
@@ -123,16 +134,22 @@ class _ReviewPageState extends State<ReviewPage> {
                                           fontSize: 20, color: Colors.black),
                                     ),
                                     subtitle: Text(data['views']),
+                                    trailing: IconButton(
+                                        onPressed: () {
+                                          deleteDocument(
+                                              snapshot.data!.docs[index].id);
+                                        },
+                                        icon: const Icon(Icons.delete)),
                                   ),
                                 ),
                               );
                             },
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
       floatingActionButton: FloatingActionButton(
@@ -140,7 +157,7 @@ class _ReviewPageState extends State<ReviewPage> {
         onPressed: () {
           showAlert(context);
         },
-        child: const Icon(Icons.add),
+        child: Icon(Icons.add),
       ),
     );
   }
